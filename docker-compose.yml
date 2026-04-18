@@ -1,0 +1,35 @@
+services:
+  ctr-mysql:
+    image: ${RELEASE}
+    container_name: ${CONTAINER_NAME}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_GLPI_USER: ${MYSQL_GLPI_USER}
+      MYSQL_GLPI_PASSWORD: ${MYSQL_GLPI_PASSWORD}
+      MYSQL_ZBX_USER: ${MYSQL_ZBX_USER}
+      MYSQL_ZBX_PASSWORD: ${MYSQL_ZBX_PASSWORD}
+      MYSQL_GRAFANA_USER: ${MYSQL_GRAFANA_USER}
+      MYSQL_GRAFANA_PASSWORD: ${MYSQL_GRAFANA_PASSWORD}
+      #MYSQL_NGINX_USER: ${MYSQL_NGINX_USER}
+      #MYSQL_NGINX_PASSWORD: ${MYSQL_NGINX_PASSWORD}
+      #MYSQL_BSKP_USER: ${MYSQL_BSKP_USER}
+      #MYSQL_BSKP_PASSWORD: ${MYSQL_BSKP_PASSWORD}
+
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ${VOL_DATABASES_PATH}
+      - ${VOL_MYSQL_INIT}
+      - ./my.cnf:/etc/mysql/conf.d/99-custom.cnf:ro
+    networks:
+      network-share:
+        ipv4_address: ${IPV4_ADDRESS}  # IP fixo para o srv-mysql
+    ports:
+      - ${PORTS_MYSQL}
+    restart: unless-stopped
+
+networks:
+  network-share:
+    external: true
+    ipam:
+      config:
+        - subnet: ${SUBNET}  # Faixa de IPs para a rede

@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+echo "▶ Criando banco e usuário do Zabbix..."
+
+mysql -uroot -p"$MYSQL_ROOT_PASSWORD" <<EOF
+CREATE DATABASE IF NOT EXISTS grafana
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+CREATE USER IF NOT EXISTS '$MYSQL_GRAFANA_USER'@'%'
+  IDENTIFIED BY '$MYSQL_GRAFANA_PASSWORD';
+
+GRANT ALL PRIVILEGES ON grafana.* TO '$MYSQL_GRAFANA_USER'@'%';
+
+FLUSH PRIVILEGES;
+EOF

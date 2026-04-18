@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+echo "▶ Criando banco e usuário do Zabbix..."
+
+mysql -uroot -p"$MYSQL_ROOT_PASSWORD" <<EOF
+CREATE DATABASE IF NOT EXISTS zabbix
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_bin;
+
+CREATE USER IF NOT EXISTS '$MYSQL_ZBX_USER'@'%'
+  IDENTIFIED BY '$MYSQL_ZBX_PASSWORD';
+
+GRANT ALL PRIVILEGES ON zabbix.* TO '$MYSQL_ZBX_USER'@'%';
+
+FLUSH PRIVILEGES;
+EOF

@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+echo "▶ Criando banco e usuário do GLPI..."
+
+mysql -uroot -p"$MYSQL_ROOT_PASSWORD" <<EOF
+CREATE DATABASE IF NOT EXISTS glpi
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+CREATE USER IF NOT EXISTS '$MYSQL_GLPI_USER'@'%'
+  IDENTIFIED BY '$MYSQL_GLPI_PASSWORD';
+
+GRANT ALL PRIVILEGES ON glpi.* TO '$MYSQL_GLPI_USER'@'%';
+
+FLUSH PRIVILEGES;
+EOF
