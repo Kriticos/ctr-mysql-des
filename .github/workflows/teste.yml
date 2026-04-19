@@ -1,0 +1,20 @@
+name: Teste inicial
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+
+      - name: Mostrar arquivos do projeto
+        run: ls -la
+
+      - name: Mensagem de teste
+        run: echo "GitHub Actions funcionando no container-mysql"
