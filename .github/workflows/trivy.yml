@@ -1,10 +1,21 @@
 name: Trivy Scan
 
-# Nome que aparecerá na aba Actions do GitHub.
-# Este workflow roda em:
+# =========================================================
+# WORKFLOW: Trivy Scan
+# ---------------------------------------------------------
+# Este workflow executa análises de segurança com Trivy em
+# dois alvos diferentes:
+#
+# 1) O repositório atual (scan-repo)
+# 2) A imagem Docker usada no projeto (scan-image)
+#
+# Ele roda automaticamente em:
 # - push na branch main
 # - pull request
-# - execução manual pela interface do GitHub
+# E também pode ser executado manualmente:
+# - workflow_dispatch
+# =========================================================
+
 on:
   push:
     branches: [ "main" ]
@@ -12,31 +23,38 @@ on:
   workflow_dispatch:
 
 jobs:
-  trivy:
-    name: Trivy - Repo e Imagem
+  # =======================================================
+  # JOB 1 - SCAN DO REPOSITÓRIO
+  # -------------------------------------------------------
+  # Este job analisa os arquivos do projeto em si.
+  # Exemplo de foco:
+  # - configurações inseguras
+  # - arquivos versionados
+  # - problemas detectáveis no conteúdo do repo
+  #
+  # Neste momento, ele está em modo informativo:
+  # - mostra HIGH e CRITICAL
+  # - não quebra a esteira (exit-code: 0)
+  # =======================================================
+  scan-repo:
+    name: Trivy - Scan do Repositório
     runs-on: ubuntu-latest
 
-    # Permissões mínimas necessárias para este workflow.
     permissions:
       contents: read
 
-    # Variáveis globais do job.
     env:
-      # Antecipa a execução de actions JavaScript em Node.js 24.
-      # Ajuda a reduzir avisos futuros de compatibilidade.
+      # Força actions JavaScript a tentarem executar com Node 24.
+      # Isso ajuda na transição do runtime do GitHub Actions.
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     steps:
-      # 1) Faz o checkout do repositório para o runner.
+      # Faz checkout do código do repositório para o runner.
       - name: Checkout do repositório
         uses: actions/checkout@v5
 
-      # 2) Scan do conteúdo do repositório.
-      # Verifica arquivos do projeto, possíveis misconfigurations e outros achados.
-      # Neste momento está em modo informativo:
-      # - mostra achados HIGH/CRITICAL
-      # - não falha o pipeline (exit-code: 0)
-      - name: Trivy - Scan do repositório
+      # Executa o Trivy contra o filesystem do repositório.
+      - name: Rodar Trivy no repositório
         uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: fs
@@ -46,10 +64,41 @@ jobs:
           ignore-unfixed: true
           exit-code: 0
 
-      # 3) Scan da imagem oficial usada no projeto.
-      # Aqui estamos analisando a imagem mysql:8.3 diretamente.
-      # Também está em modo informativo por enquanto.
-      - name: Trivy - Scan da imagem MySQL
+  # =======================================================
+  # JOB 2 - SCAN DA IMAGEM
+  # -------------------------------------------------------
+  # Este job analisa a imagem Docker usada no projeto.
+  #
+  # No seu caso, estamos analisando diretamente a imagem:
+  # mysql:8.3
+  #
+  # Esse scan é útil para identificar vulnerabilidades
+  # na imagem base e nos pacotes embarcados nela.
+  #
+  # Também está em modo informativo por enquanto:
+  # - mostra HIGH e CRITICAL
+  # - não quebra a esteira (exit-code: 0)
+  # =======================================================
+  scan-image:
+    name: Trivy - Scan da Imagem MySQL
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    env:
+      # Mesmo objetivo do job anterior:
+      # preparar o workflow para o runtime Node 24.
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+    steps:
+      # Checkout não é obrigatório para escanear uma imagem remota,
+      # mas manter aqui ajuda a padronizar o job e facilita futuras evoluções.
+      - name: Checkout do repositório
+        uses: actions/checkout@v5
+
+      # Executa o Trivy na imagem Docker utilizada pelo projeto.
+      - name: Rodar Trivy na imagem mysql:8.3
         uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: mysql:8.3
@@ -57,4 +106,3 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: 0
-          skip-setup-trivy: true
