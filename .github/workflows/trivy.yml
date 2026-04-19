@@ -55,7 +55,7 @@ jobs:
 
       # Executa o Trivy contra o filesystem do repositório.
       - name: Rodar Trivy no repositório
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@57a97c7
         with:
           scan-type: fs
           scan-ref: .
@@ -99,7 +99,7 @@ jobs:
 
       # Executa o Trivy na imagem Docker utilizada pelo projeto.
       - name: Rodar Trivy na imagem mysql:8.3
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@57a97c7
         with:
           image-ref: mysql:8.3
           format: table
