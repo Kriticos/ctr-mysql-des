@@ -1,5 +1,10 @@
 name: Trivy Scan
 
+# Nome que aparecerá na aba Actions do GitHub.
+# Este workflow roda em:
+# - push na branch main
+# - pull request
+# - execução manual pela interface do GitHub
 on:
   push:
     branches: [ "main" ]
@@ -11,13 +16,26 @@ jobs:
     name: Trivy - Repo e Imagem
     runs-on: ubuntu-latest
 
+    # Permissões mínimas necessárias para este workflow.
     permissions:
       contents: read
 
+    # Variáveis globais do job.
+    env:
+      # Antecipa a execução de actions JavaScript em Node.js 24.
+      # Ajuda a reduzir avisos futuros de compatibilidade.
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
     steps:
+      # 1) Faz o checkout do repositório para o runner.
       - name: Checkout do repositório
         uses: actions/checkout@v4
 
+      # 2) Scan do conteúdo do repositório.
+      # Verifica arquivos do projeto, possíveis misconfigurations e outros achados.
+      # Neste momento está em modo informativo:
+      # - mostra achados HIGH/CRITICAL
+      # - não falha o pipeline (exit-code: 0)
       - name: Trivy - Scan do repositório
         uses: aquasecurity/trivy-action@0.35.0
         with:
@@ -28,6 +46,9 @@ jobs:
           ignore-unfixed: true
           exit-code: 0
 
+      # 3) Scan da imagem oficial usada no projeto.
+      # Aqui estamos analisando a imagem mysql:8.3 diretamente.
+      # Também está em modo informativo por enquanto.
       - name: Trivy - Scan da imagem MySQL
         uses: aquasecurity/trivy-action@0.35.0
         with:
